@@ -1,0 +1,69 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@noble/hashes@^2.0.1": "2.0.1",
+    "jsr:@quentinadam/assert@~0.1.17": "0.1.17",
+    "jsr:@quentinadam/ensure@~0.1.5": "0.1.5",
+    "jsr:@quentinadam/hash@~0.1.12": "0.1.12",
+    "jsr:@quentinadam/rlp@0.1": "0.1.0",
+    "jsr:@quentinadam/uint8array-extension@~0.1.13": "0.1.13",
+    "jsr:@quentinadam/zod@~0.1.14": "0.1.14",
+    "npm:typescript@^6.0.1-rc": "6.0.1-rc"
+  },
+  "jsr": {
+    "@noble/hashes@2.0.1": {
+      "integrity": "e0e908292a0bf91099cf8ba0720a1647cef82ab38b588815b5e9535b4ff4d7bb"
+    },
+    "@quentinadam/assert@0.1.17": {
+      "integrity": "9eef3bbf11e01f89e53a3ca569a390fd9f313edfd1b962477684528bafeb9f35"
+    },
+    "@quentinadam/ensure@0.1.5": {
+      "integrity": "69e744b5015c0ef2db83e2116321524f720c04bf345805a45fb657510d01a7f7",
+      "dependencies": [
+        "jsr:@quentinadam/assert"
+      ]
+    },
+    "@quentinadam/hash@0.1.12": {
+      "integrity": "b8cbac62bb0441f786a30137f97b9f73f961b291ea4de685a061961fdc9e2c7c",
+      "dependencies": [
+        "jsr:@noble/hashes",
+        "jsr:@quentinadam/assert",
+        "jsr:@quentinadam/ensure",
+        "jsr:@quentinadam/uint8array-extension"
+      ]
+    },
+    "@quentinadam/rlp@0.1.0": {
+      "integrity": "5f6da1a776ef91a847a4deef9d6de04443a0180b7a918f01e6af0a017729db4d",
+      "dependencies": [
+        "jsr:@quentinadam/ensure",
+        "jsr:@quentinadam/uint8array-extension"
+      ]
+    },
+    "@quentinadam/uint8array-extension@0.1.13": {
+      "integrity": "7d8aec5028b42876b83496066b547902d9fa7929e87b7e0f74dc4ff2847ab280",
+      "dependencies": [
+        "jsr:@quentinadam/assert"
+      ]
+    },
+    "@quentinadam/zod@0.1.14": {
+      "integrity": "fd1c77e3cc37e0ee9bc1282613528799ad42c1d54802903096d2dde6dc9536e9"
+    }
+  },
+  "npm": {
+    "typescript@6.0.1-rc": {
+      "integrity": "sha512-7XlzYb+p/7YxX6qSOzwB4mxVFRdAgWWkj1PgAZ+jzldeuFV6Z77vwFbNxHsUXAL/bhlWY2jCT8shLwDJR8337g==",
+      "bin": true
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@quentinadam/assert@~0.1.17",
+      "jsr:@quentinadam/ensure@~0.1.5",
+      "jsr:@quentinadam/hash@~0.1.12",
+      "jsr:@quentinadam/rlp@0.1",
+      "jsr:@quentinadam/uint8array-extension@~0.1.13",
+      "jsr:@quentinadam/zod@~0.1.14",
+      "npm:typescript@^6.0.1-rc"
+    ]
+  }
+}
