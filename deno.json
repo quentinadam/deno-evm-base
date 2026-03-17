@@ -9,11 +9,7 @@
     "url": "git+https://github.com/quentinadam/deno-evm-base.git"
   },
   "exports": {
-    ".": "./src/mod.ts",
-    "./ABI": "./src/ABI.ts",
-    "./Client": "./src/Client.ts",
-    "./ClientError": "./src/ClientError.ts",
-    "./MulticallClient": "./src/MulticallClient.ts"
+    ".": "./src/mod.ts"
   },
   "imports": {
     "@quentinadam/assert": "jsr:@quentinadam/assert@^0.1.17",
