@@ -4,6 +4,7 @@ import computeCREATE2Address from './computeCREATE2Address.ts';
 import computeCREATEAddress from './computeCREATEAddress.ts';
 import Client from './Client.ts';
 import ClientError from './ClientError.ts';
+import Data from './Data.ts';
 import DataEncoder from './DataEncoder.ts';
 import ClientHelper from './ClientHelper.ts';
 import type Log from './Log.ts';
@@ -18,6 +19,7 @@ export {
   ClientHelper,
   computeCREATE2Address,
   computeCREATEAddress,
+  Data,
   DataEncoder,
   MulticallClient,
 };
