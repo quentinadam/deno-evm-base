@@ -5,7 +5,7 @@ import computeCREATEAddress from './computeCREATEAddress.ts';
 import Client from './Client.ts';
 import ClientError from './ClientError.ts';
 import createInspectableDataWrapper from './createInspectableDataWrapper.ts';
-import createScaledBigIntWrapper from './createScaledBigIntWrapper.ts';
+import createInspectableScaledBigIntWrapper from './createInspectableScaledBigIntWrapper.ts';
 import DataEncoder from './DataEncoder.ts';
 import ClientHelper from './ClientHelper.ts';
 import type Log from './Log.ts';
@@ -22,7 +22,7 @@ export {
   computeCREATE2Address,
   computeCREATEAddress,
   createInspectableDataWrapper,
-  createScaledBigIntWrapper,
+  createInspectableScaledBigIntWrapper,
   DataEncoder,
   MethodSignatureRegistry,
   MulticallClient,
