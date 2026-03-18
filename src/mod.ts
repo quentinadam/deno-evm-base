@@ -4,10 +4,11 @@ import computeCREATE2Address from './computeCREATE2Address.ts';
 import computeCREATEAddress from './computeCREATEAddress.ts';
 import Client from './Client.ts';
 import ClientError from './ClientError.ts';
-import Data from './Data.ts';
+import createInspectableDataWrapper from './createInspectableDataWrapper.ts';
 import DataEncoder from './DataEncoder.ts';
 import ClientHelper from './ClientHelper.ts';
 import type Log from './Log.ts';
+import MethodSignatureRegistry from './MethodSignatureRegistry.ts';
 import MulticallClient from './MulticallClient.ts';
 import type Transaction from './Transaction.ts';
 import type TransactionReceipt from './TransactionReceipt.ts';
@@ -19,8 +20,9 @@ export {
   ClientHelper,
   computeCREATE2Address,
   computeCREATEAddress,
-  Data,
+  createInspectableDataWrapper,
   DataEncoder,
+  MethodSignatureRegistry,
   MulticallClient,
 };
 
