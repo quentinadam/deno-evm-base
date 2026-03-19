@@ -23,7 +23,7 @@ export default function computeCREATE2Address(
     return keccak256(concat([bytecode, constructorArguments].filter((chunk) => chunk !== undefined)));
   })();
   const bytes = keccak256(concat([
-    new Uint8Array(prefixByte),
+    new Uint8Array([prefixByte]),
     bytesFromAddress(deployer),
     salt instanceof Uint8Array ? salt : fromUintBE(salt, 32),
     bytecodeHash,
