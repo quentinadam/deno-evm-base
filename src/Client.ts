@@ -106,6 +106,22 @@ export default class Client {
     return z.array(this.#helper.LogSchema).parse(response);
   }
 
+  async getStorageAt({ address, position }: {
+    address: string;
+    position: string | number | bigint | Uint8Array<ArrayBuffer>;
+  }): Promise<Uint8Array<ArrayBuffer>> {
+    if (typeof position === 'number' || typeof position === 'bigint') {
+      position = '0x' + position.toString(16);
+    } else if (position instanceof Uint8Array) {
+      position = '0x' + position.toHex();
+    }
+    const response = await this.request({
+      method: 'eth_getStorageAt',
+      params: [this.#helper.serializeAddress(address), position, 'latest'],
+    });
+    return this.#helper.BytesSchema.parse(response);
+  }
+
   async getTransaction(hash: string): Promise<Transaction | undefined> {
     return this.#helper.TransactionSchema.parse(
       await this.request({
