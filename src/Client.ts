@@ -45,15 +45,15 @@ export default class Client {
     return result.value;
   }
 
-  async call({ contract, data }: {
-    contract: string;
+  async call({ address, data }: {
+    address: string;
     data: Uint8Array<ArrayBuffer> | { method: string; parameters: Uint8Array<ArrayBuffer> | unknown[] };
   }): Promise<Uint8Array<ArrayBuffer>> {
     data = this.#helper.normalizeData(data);
     return this.#helper.BytesSchema.parse(
       await this.request({
         method: 'eth_call',
-        params: [{ to: this.#helper.serializeAddress(contract), data: '0x' + data.toHex() }, 'latest'],
+        params: [{ to: this.#helper.serializeAddress(address), data: '0x' + data.toHex() }, 'latest'],
       }),
     );
   }
