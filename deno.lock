@@ -8,7 +8,7 @@
     "jsr:@quentinadam/rlp@0.1": "0.1.0",
     "jsr:@quentinadam/uint8array-extension@~0.1.13": "0.1.13",
     "jsr:@quentinadam/zod@~0.1.14": "0.1.14",
-    "npm:typescript@^6.0.1-rc": "6.0.1-rc"
+    "npm:typescript@^6.0.2": "6.0.2"
   },
   "jsr": {
     "@noble/hashes@2.0.1": {
@@ -50,8 +50,8 @@
     }
   },
   "npm": {
-    "typescript@6.0.1-rc": {
-      "integrity": "sha512-7XlzYb+p/7YxX6qSOzwB4mxVFRdAgWWkj1PgAZ+jzldeuFV6Z77vwFbNxHsUXAL/bhlWY2jCT8shLwDJR8337g==",
+    "typescript@6.0.2": {
+      "integrity": "sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==",
       "bin": true
     }
   },
@@ -63,7 +63,7 @@
       "jsr:@quentinadam/rlp@0.1",
       "jsr:@quentinadam/uint8array-extension@~0.1.13",
       "jsr:@quentinadam/zod@~0.1.14",
-      "npm:typescript@^6.0.1-rc"
+      "npm:typescript@^6.0.2"
     ]
   }
 }
