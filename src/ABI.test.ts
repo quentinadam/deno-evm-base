@@ -41,6 +41,18 @@ const vectors: TestVector[] = [
   },
   {
     type: 'uint256',
+    value: '1',
+    bytes: '0000000000000000000000000000000000000000000000000000000000000001',
+    decodedValue: 1n,
+  },
+  {
+    type: 'uint256',
+    value: '0x1',
+    bytes: '0000000000000000000000000000000000000000000000000000000000000001',
+    decodedValue: 1n,
+  },
+  {
+    type: 'uint256',
     value: 0,
     bytes: '0000000000000000000000000000000000000000000000000000000000000000',
     decodedValue: 0n,
@@ -52,8 +64,32 @@ const vectors: TestVector[] = [
   },
   {
     type: 'uint256',
+    value: '255',
+    bytes: '00000000000000000000000000000000000000000000000000000000000000ff',
+    decodedValue: 255n,
+  },
+  {
+    type: 'uint256',
+    value: '0xff',
+    bytes: '00000000000000000000000000000000000000000000000000000000000000ff',
+    decodedValue: 255n,
+  },
+  {
+    type: 'uint256',
     value: 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn,
     bytes: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+  },
+  {
+    type: 'uint256',
+    value: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
+    bytes: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    decodedValue: 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn,
+  },
+  {
+    type: 'uint256',
+    value: '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    bytes: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    decodedValue: 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn,
   },
 
   // uint8 tests
@@ -80,6 +116,12 @@ const vectors: TestVector[] = [
     type: 'int256',
     value: -1n,
     bytes: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+  },
+  {
+    type: 'int256',
+    value: '-1',
+    bytes: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    decodedValue: -1n,
   },
   {
     type: 'int256',

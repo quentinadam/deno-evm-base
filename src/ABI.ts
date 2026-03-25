@@ -19,6 +19,24 @@ abstract class Element {
   abstract decode(bytes: Uint8Array<ArrayBuffer>): unknown;
 }
 
+function parseBigInt(value: unknown) {
+  if (typeof value === 'bigint') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    assert(Number.isSafeInteger(value), 'Value must be a safe integer');
+    return BigInt(value);
+  }
+  if (typeof value === 'string') {
+    try {
+      return BigInt(value);
+    } catch {
+      throw new Error('Value must be a valid bigint string');
+    }
+  }
+  throw new Error('Value must be a bigint, a number, or a hex string');
+}
+
 class IntElement extends Element {
   readonly bits;
 
@@ -31,14 +49,7 @@ class IntElement extends Element {
   }
 
   override encode(value: unknown) {
-    assert(typeof value === 'number' || typeof value === 'bigint', 'Value must be a number or a bigint');
-    return ((value) => {
-      if (typeof value === 'number') {
-        assert(Number.isSafeInteger(value), 'Value must be a safe integer');
-        value = BigInt(value);
-      }
-      return Uint8ArrayExtension.fromIntBE(value, 32);
-    })(value);
+    return Uint8ArrayExtension.padStart(Uint8ArrayExtension.fromIntBE(parseBigInt(value), this.bits / 8), 32);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>) {
@@ -60,14 +71,7 @@ class UintElement extends Element {
   }
 
   override encode(value: unknown) {
-    assert(typeof value === 'number' || typeof value === 'bigint', 'Value must be a number or a bigint');
-    return ((value) => {
-      if (typeof value === 'number') {
-        assert(Number.isSafeInteger(value), 'Value must be a safe integer');
-        value = BigInt(value);
-      }
-      return Uint8ArrayExtension.fromUintBE(value, 32);
-    })(value);
+    return Uint8ArrayExtension.padStart(Uint8ArrayExtension.fromUintBE(parseBigInt(value), this.bits / 8), 32);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>) {
@@ -129,10 +133,9 @@ class StringElement extends Element {
 
   override encode(value: unknown) {
     assert(typeof value === 'string', 'Value must be a string');
-    let bytes = new TextEncoder().encode(value);
+    const bytes = new TextEncoder().encode(value);
     const length = bytes.length;
-    bytes = padEnd(bytes);
-    return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), bytes]);
+    return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), padEnd(bytes)]);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>) {
@@ -157,11 +160,10 @@ class BytesElement extends Element {
 
   #encode(bytes: Uint8Array<ArrayBuffer>) {
     const length = bytes.length;
-    bytes = padEnd(bytes);
     if (this.length !== undefined) {
-      return bytes;
+      return padEnd(bytes);
     } else {
-      return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), bytes]);
+      return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), padEnd(bytes)]);
     }
   }
 
@@ -365,7 +367,7 @@ export default class ABI {
   #parse(type: string): Element {
     const parsers: { regex: RegExp; fn: (match: RegExpMatchArray) => Element }[] = [
       {
-        regex: /^(.+)\[(\d+)\]$/,
+        regex: /^(.+)\[([1-9]\d*)\]$/,
         fn: (match) => new ArrayElement(this.#parse(ensure(match[1])), Number(ensure(match[2]))),
       },
       { regex: /^(.+)\[\]$/, fn: (match) => new ArrayElement(this.#parse(ensure(match[1]))) },
@@ -397,9 +399,9 @@ export default class ABI {
           return new StructElement(elements);
         },
       },
-      { regex: /^uint(\d+)$/, fn: (match) => new UintElement(Number(ensure(match[1]))) },
-      { regex: /^int(\d+)$/, fn: (match) => new IntElement(Number(ensure(match[1]))) },
-      { regex: /^bytes(\d+)$/, fn: (match) => new BytesElement(Number(ensure(match[1]))) },
+      { regex: /^uint([1-9]\d*)$/, fn: (match) => new UintElement(Number(ensure(match[1]))) },
+      { regex: /^int([1-9]\d*)$/, fn: (match) => new IntElement(Number(ensure(match[1]))) },
+      { regex: /^bytes([1-9]\d*)$/, fn: (match) => new BytesElement(Number(ensure(match[1]))) },
       { regex: /^bytes$/, fn: () => new BytesElement() },
       { regex: /^string$/, fn: () => new StringElement() },
       { regex: /^bool$/, fn: () => new BoolElement() },
