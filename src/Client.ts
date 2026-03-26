@@ -46,7 +46,7 @@ export default class Client {
         return { success: false as const, code: error.code, message: error.message, data: error.data };
       }),
       z.object({ result: z.unknown() }).transform(({ result }) => ({ success: true as const, value: result })),
-    ]).parse(text);
+    ]).parse(JSON.parse(text));
     if (!result.success) {
       throw new ClientError({ message: result.message, code: result.code, data: result.data });
     }
