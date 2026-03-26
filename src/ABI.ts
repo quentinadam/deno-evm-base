@@ -2,6 +2,7 @@ import assert from '@quentinadam/assert';
 import * as Uint8ArrayExtension from '@quentinadam/uint8array-extension';
 import keccak256 from '@quentinadam/hash/keccak256';
 import ensure from '@quentinadam/ensure';
+import parseBytes from './parseBytes.ts';
 
 abstract class Element {
   readonly encodedLength: number | undefined;
@@ -158,26 +159,14 @@ class BytesElement extends Element {
     this.length = length;
   }
 
-  #encode(bytes: Uint8Array<ArrayBuffer>) {
+  override encode(value: unknown) {
+    const bytes = parseBytes(value);
     const length = bytes.length;
     if (this.length !== undefined) {
       return padEnd(bytes);
     } else {
       return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), padEnd(bytes)]);
     }
-  }
-
-  override encode(value: unknown) {
-    if (typeof value === 'string') {
-      const match = value.match(/^(?:0x)?(?<hex>(?:[0-9a-f][0-9a-f])*)$/i);
-      if (match !== null) {
-        return this.#encode(Uint8Array.fromHex(ensure(ensure(match.groups).hex)));
-      }
-    }
-    if (value instanceof Uint8Array && Uint8ArrayExtension.isArrayBufferBacked(value)) {
-      return this.#encode(value);
-    }
-    throw new Error('Value must be a hex string or a Uint8Array<ArrayBuffer>');
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>) {

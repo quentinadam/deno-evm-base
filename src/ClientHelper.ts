@@ -124,7 +124,10 @@ export default class ClientHelper {
   }
 
   normalizeData(
-    data: Uint8Array<ArrayBuffer> | { method: string; parameters: Uint8Array<ArrayBuffer> | unknown[] },
+    data: Uint8Array<ArrayBuffer> | string | {
+      method: string;
+      parameters: Uint8Array<ArrayBuffer> | string | unknown[];
+    },
   ): Uint8Array<ArrayBuffer> {
     return this.#dataEncoder.normalize(data);
   }

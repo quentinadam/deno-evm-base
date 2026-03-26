@@ -1,6 +1,7 @@
 import ensure from '@quentinadam/ensure';
 import * as z from '@quentinadam/zod';
 import type Client from './Client.ts';
+import { DataEncoder } from '@quentinadam/evm-base';
 
 export default class MulticallClient {
   readonly #client;
@@ -30,13 +31,13 @@ export default class MulticallClient {
 
   async call({ address, data }: {
     address: string;
-    data: Uint8Array<ArrayBuffer> | { method: string; parameters: unknown[] };
+    data: Uint8Array<ArrayBuffer> | string | {
+      method: string;
+      parameters: Uint8Array<ArrayBuffer> | string | unknown[];
+    };
   }): Promise<Uint8Array<ArrayBuffer>> {
     return await new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
-      if (data instanceof Uint8Array === false) {
-        const { method, parameters } = data;
-        data = this.#client.createABI(method).encode(parameters);
-      }
+      data = new DataEncoder((type) => this.#client.createABI(type)).normalize(data);
       this.#pendingCalls.push({ address, data, resolve, reject });
       queueMicrotask(async () => {
         if (this.#pendingCalls.length > 0) {
@@ -47,7 +48,7 @@ export default class MulticallClient {
               [pendingCalls.map(({ address, data }) => [address, true, data])],
             );
             try {
-              const result = await this.#client.call({ address: this.#multicallAddress, data });
+              const result = await this.#client.call({ to: this.#multicallAddress, data });
               const [decoded] = z.tuple([z.array(z.tuple([z.boolean(), z.instanceof(Uint8Array)]))]).parse(
                 this.#client.createABI('((bool,bytes)[])').decode(result),
               );
@@ -67,7 +68,7 @@ export default class MulticallClient {
           } else {
             const { address, data, resolve, reject } = ensure(pendingCalls[0]);
             try {
-              resolve(await this.#client.call({ address, data }));
+              resolve(await this.#client.call({ to: address, data }));
             } catch (error) {
               reject(error);
             }
