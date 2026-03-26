@@ -5,6 +5,7 @@ import DataEncoder from './DataEncoder.ts';
 import type Log from './Log.ts';
 import type Transaction from './Transaction.ts';
 import type TransactionReceipt from './TransactionReceipt.ts';
+import deserializeBytes from './deserializeBytes.ts';
 
 export default class ClientHelper {
   readonly #addressFromBytes: (bytes: Uint8Array<ArrayBuffer>) => string;
@@ -14,17 +15,16 @@ export default class ClientHelper {
   readonly #dataEncoder: DataEncoder;
 
   readonly BytesSchema: z.Schema<Uint8Array<ArrayBuffer>> = z.string().transform((string) => {
-    assert(/0x[0-9a-f]*/.test(string));
-    return Uint8Array.fromHex(string.slice(2));
+    return deserializeBytes(string);
   });
 
   readonly HexNumberSchema: z.Schema<number> = z.string().transform((string) => {
-    assert(/0x[0-9a-f]+/.test(string));
+    assert(/0x[0-9a-f]+/i.test(string));
     return Number(string);
   });
 
   readonly HexBigIntSchema: z.Schema<bigint> = z.string().transform((string) => {
-    assert(/0x[0-9a-f]+/.test(string));
+    assert(/0x[0-9a-f]+/i.test(string));
     return BigInt(string);
   });
 
@@ -100,6 +100,18 @@ export default class ClientHelper {
     this.#deserializeHash = deserializeHash;
     this.#serializeHash = serializeHash;
     this.#dataEncoder = new DataEncoder((type) => this.createABI(type));
+  }
+
+  serializeInteger(number: number | bigint): string {
+    return '0x' + number.toString(16);
+  }
+
+  serializeBytes(bytes: Uint8Array): string {
+    return '0x' + bytes.toHex();
+  }
+
+  deserializeBytes(bytes: string): Uint8Array<ArrayBuffer> {
+    return deserializeBytes(bytes);
   }
 
   deserializeAddress(address: string): string {

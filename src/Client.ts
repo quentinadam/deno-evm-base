@@ -56,7 +56,7 @@ export default class Client {
     return this.#helper.BytesSchema.parse(
       await this.request({
         method: 'eth_call',
-        params: [{ to: this.#helper.serializeAddress(to), data: '0x' + data.toHex() }, 'latest'],
+        params: [{ to: this.#helper.serializeAddress(to), data: this.#helper.serializeBytes(data) }, 'latest'],
       }),
     );
   }
@@ -69,7 +69,7 @@ export default class Client {
   async getBlockByNumber(blockNumber: number): Promise<Block | undefined> {
     const response = await this.request({
       method: 'eth_getBlockByNumber',
-      params: [`0x${blockNumber.toString(16)}`, false],
+      params: [this.#helper.serializeInteger(blockNumber), false],
     });
     return z.union([
       z.null().transform(() => undefined),
@@ -92,8 +92,8 @@ export default class Client {
     const response = await this.request({
       method: 'eth_getLogs',
       params: [{
-        fromBlock: fromBlock !== undefined ? `0x${fromBlock.toString(16)}` : undefined,
-        toBlock: toBlock !== undefined ? `0x${toBlock.toString(16)}` : undefined,
+        fromBlock: fromBlock !== undefined ? this.#helper.serializeInteger(fromBlock) : undefined,
+        toBlock: toBlock !== undefined ? this.#helper.serializeInteger(toBlock) : undefined,
         address: address === undefined
           ? undefined
           : typeof address === 'string'
@@ -101,7 +101,9 @@ export default class Client {
           : address.map((address) => this.#helper.serializeAddress(address)),
         topics: topics?.map((topic) => {
           return topic !== null
-            ? topic instanceof Uint8Array ? '0x' + topic.toHex() : topic.map((topic) => '0x' + topic.toHex())
+            ? topic instanceof Uint8Array
+              ? this.#helper.serializeBytes(topic)
+              : topic.map((topic) => this.#helper.serializeBytes(topic))
             : null;
         }),
       }],
@@ -114,9 +116,9 @@ export default class Client {
     position: string | number | bigint | Uint8Array<ArrayBuffer>;
   }): Promise<Uint8Array<ArrayBuffer>> {
     if (typeof position === 'number' || typeof position === 'bigint') {
-      position = '0x' + position.toString(16);
+      position = this.#helper.serializeInteger(position);
     } else if (position instanceof Uint8Array) {
-      position = '0x' + position.toHex();
+      position = this.#helper.serializeBytes(position);
     }
     const response = await this.request({
       method: 'eth_getStorageAt',
@@ -155,10 +157,10 @@ export default class Client {
     const result = await this.request({
       method: 'eth_estimateGas',
       params: [{
-        from,
-        value: `0x${(value ?? 0n).toString(16)}`,
-        to,
-        data: '0x' + (data ?? new Uint8Array(0)).toHex(),
+        from: this.#helper.serializeAddress(from),
+        value: this.#helper.serializeInteger(value ?? 0),
+        to: to !== undefined ? this.#helper.serializeAddress(to) : undefined,
+        data: this.#helper.serializeBytes(data ?? new Uint8Array(0)),
       }],
     });
     return this.#helper.HexNumberSchema.parse(result);

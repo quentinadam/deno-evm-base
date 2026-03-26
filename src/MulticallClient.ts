@@ -1,7 +1,7 @@
 import ensure from '@quentinadam/ensure';
 import * as z from '@quentinadam/zod';
 import type Client from './Client.ts';
-import { DataEncoder } from '@quentinadam/evm-base';
+import DataEncoder from './DataEncoder.ts';
 
 export default class MulticallClient {
   readonly #client;

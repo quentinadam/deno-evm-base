@@ -2,7 +2,7 @@ import assert from '@quentinadam/assert';
 import * as Uint8ArrayExtension from '@quentinadam/uint8array-extension';
 import keccak256 from '@quentinadam/hash/keccak256';
 import ensure from '@quentinadam/ensure';
-import parseBytes from './parseBytes.ts';
+import deserializeBytes from './deserializeBytes.ts';
 
 abstract class Element {
   readonly encodedLength: number | undefined;
@@ -20,6 +20,20 @@ abstract class Element {
   abstract decode(bytes: Uint8Array<ArrayBuffer>): unknown;
 }
 
+function parseBytes(value: unknown): Uint8Array {
+  if (value instanceof Uint8Array) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    try {
+      return deserializeBytes(value);
+    } catch {
+      // Ignore error and throw a more specific one below
+    }
+  }
+  throw new TypeError('Value must be a Uint8Array or a hexadecimal string');
+}
+
 function parseBigInt(value: unknown) {
   if (typeof value === 'bigint') {
     return value;
@@ -32,10 +46,10 @@ function parseBigInt(value: unknown) {
     try {
       return BigInt(value);
     } catch {
-      throw new Error('Value must be a valid bigint string');
+      throw new TypeError('Value must be a valid bigint string');
     }
   }
-  throw new Error('Value must be a bigint, a number, or a hex string');
+  throw new TypeError('Value must be a bigint, a number, or a hex string');
 }
 
 class IntElement extends Element {
@@ -49,11 +63,11 @@ class IntElement extends Element {
     this.bits = bits;
   }
 
-  override encode(value: unknown) {
+  override encode(value: unknown): Uint8Array<ArrayBuffer> {
     return Uint8ArrayExtension.padStart(Uint8ArrayExtension.fromIntBE(parseBigInt(value), this.bits / 8), 32);
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): bigint {
     assert(bytes.length >= 32);
     const value = Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32));
     return (value >= (1n << 255n)) ? value - (1n << 256n) : value;
@@ -71,11 +85,11 @@ class UintElement extends Element {
     this.bits = bits;
   }
 
-  override encode(value: unknown) {
+  override encode(value: unknown): Uint8Array<ArrayBuffer> {
     return Uint8ArrayExtension.padStart(Uint8ArrayExtension.fromUintBE(parseBigInt(value), this.bits / 8), 32);
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): bigint {
     assert(bytes.length >= 32);
     return Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32));
   }
@@ -86,14 +100,14 @@ class BoolElement extends Element {
     super(32);
   }
 
-  override encode(value: unknown) {
+  override encode(value: unknown): Uint8Array<ArrayBuffer> {
     assert(typeof value === 'boolean', 'Value must be a boolean');
     return ((value) => {
       return Uint8ArrayExtension.fromUintBE(value ? 1 : 0, 32);
     })(value);
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): boolean {
     assert(bytes.length >= 32);
     const value = Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32));
     if (value === 0n) {
@@ -113,14 +127,14 @@ abstract class AddressElement extends Element {
     super(32);
   }
 
-  override encode(value: unknown) {
+  override encode(value: unknown): Uint8Array<ArrayBuffer> {
     assert(typeof value === 'string', 'Value must be a string');
     const bytes = this.bytesFromAddress(value);
     assert(bytes.length === 20, 'Buffer must be 20 bytes long');
     return Uint8ArrayExtension.padStart(bytes, 32);
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): string {
     assert(bytes.length >= 32);
     assert(bytes.slice(0, 12).every((byte) => byte === 0), 'First 12 bytes must be zero');
     return this.addressFromBytes(bytes.slice(12, 32));
@@ -132,14 +146,14 @@ class StringElement extends Element {
     super(undefined);
   }
 
-  override encode(value: unknown) {
+  override encode(value: unknown): Uint8Array<ArrayBuffer> {
     assert(typeof value === 'string', 'Value must be a string');
     const bytes = new TextEncoder().encode(value);
     const length = bytes.length;
     return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), padEnd(bytes)]);
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): string {
     assert(bytes.length >= 32);
     const length = Number(Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32)));
     assert(bytes.length >= 32 + padLength(length));
@@ -159,7 +173,7 @@ class BytesElement extends Element {
     this.length = length;
   }
 
-  override encode(value: unknown) {
+  override encode(value: unknown): Uint8Array<ArrayBuffer> {
     const bytes = parseBytes(value);
     const length = bytes.length;
     if (this.length !== undefined) {
@@ -169,7 +183,7 @@ class BytesElement extends Element {
     }
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
     assert(bytes.length >= 32);
     if (this.length !== undefined) {
       return bytes.slice(0, this.length);
@@ -181,11 +195,11 @@ class BytesElement extends Element {
   }
 }
 
-function padLength(length: number) {
+function padLength(length: number): number {
   return length + (32 - length % 32) % 32;
 }
 
-function padEnd(bytes: Uint8Array<ArrayBuffer>) {
+function padEnd(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
   return Uint8ArrayExtension.padEnd(bytes, padLength(bytes.length));
 }
 
@@ -206,12 +220,12 @@ class StructElement extends Element {
     this.elements = elements;
   }
 
-  override encode(value: unknown) {
+  override encode(value: unknown): Uint8Array<ArrayBuffer> {
     assert(Array.isArray(value), 'Value must be an array');
     return encode({ elements: this.elements, values: value });
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): unknown[] {
     let offset = 0;
     return this.elements.map((element) => {
       const encodedLength = element.encodedLength;
@@ -229,7 +243,7 @@ class StructElement extends Element {
   }
 }
 
-function encode({ elements, values }: { elements: Element[]; values: unknown[] }) {
+function encode({ elements, values }: { elements: Element[]; values: unknown[] }): Uint8Array<ArrayBuffer> {
   assert(values.length === elements.length, 'Array length must match');
   return ((elements) => {
     let offset = 0;
@@ -269,7 +283,7 @@ class ArrayElement extends Element {
     this.length = length;
   }
 
-  override encode(values: unknown) {
+  override encode(values: unknown): Uint8Array<ArrayBuffer> {
     assert(Array.isArray(values), 'Value must be an array');
     const encodedValue = encode({ elements: new Array(values.length).fill(this.element), values });
     if (this.length !== undefined) {
@@ -280,7 +294,7 @@ class ArrayElement extends Element {
     }
   }
 
-  override decode(bytes: Uint8Array<ArrayBuffer>) {
+  override decode(bytes: Uint8Array<ArrayBuffer>): unknown[] {
     const { length, dataOffset } = (() => {
       if (this.length === undefined) {
         // Dynamic array: read length from first 32 bytes
@@ -417,9 +431,9 @@ export default class ABI {
           return fn(match);
         }
       }
-      throw new Error('No match');
+      throw new TypeError('No match');
     } catch (_) {
-      throw new Error(`Failed to parse "${type}"`);
+      throw new TypeError(`Failed to parse "${type}"`);
     }
   }
 }
