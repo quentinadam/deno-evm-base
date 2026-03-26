@@ -11,6 +11,7 @@ import ClientHelper from './ClientHelper.ts';
 import type Log from './Log.ts';
 import MethodSignatureRegistry from './MethodSignatureRegistry.ts';
 import MulticallClient from './MulticallClient.ts';
+import PrivateKey from './PrivateKey.ts';
 import type Transaction from './Transaction.ts';
 import type TransactionReceipt from './TransactionReceipt.ts';
 
@@ -26,6 +27,7 @@ export {
   DataEncoder,
   MethodSignatureRegistry,
   MulticallClient,
+  PrivateKey,
 };
 
 export type { Block, Log, Transaction, TransactionReceipt };
