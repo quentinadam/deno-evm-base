@@ -68,7 +68,7 @@ export default class MulticallClient {
           } else {
             const { to, data, resolve, reject } = ensure(pendingCalls[0]);
             try {
-              resolve(await this.#client.call({ to: to, data }));
+              resolve(await this.#client.call({ to, data }));
             } catch (error) {
               reject(error);
             }
