@@ -11,10 +11,15 @@ export default class Client {
   readonly #url: string;
   readonly #helper: ClientHelper;
   #id = 0;
+  readonly #logger?: { log: (...args: unknown[]) => void };
 
-  constructor(url: string, helper: ClientHelper) {
+  constructor(
+    url: string,
+    { helper, logger }: { helper: ClientHelper; logger?: { log: (...args: unknown[]) => void } },
+  ) {
     this.#url = url;
     this.#helper = helper;
+    this.#logger = logger;
   }
 
   createABI(type: string): ABI {
@@ -23,13 +28,16 @@ export default class Client {
 
   async request({ method, params }: { method: string; params?: unknown }): Promise<unknown> {
     const body = JSON.stringify({ method, params, id: this.#id++, jsonrpc: '2.0' });
+    this.#logger?.log('POST', this.#url, body);
     const response = await fetch(this.#url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
     });
+    const text = await response.text();
+    this.#logger?.log(response.status, text);
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      throw new Error(`HTTP ${response.status}: ${text}`);
     }
     const result = z.union([
       z.object({
@@ -38,7 +46,7 @@ export default class Client {
         return { success: false as const, code: error.code, message: error.message, data: error.data };
       }),
       z.object({ result: z.unknown() }).transform(({ result }) => ({ success: true as const, value: result })),
-    ]).parse(await response.json());
+    ]).parse(text);
     if (!result.success) {
       throw new ClientError({ message: result.message, code: result.code, data: result.data });
     }
