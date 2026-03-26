@@ -7,7 +7,7 @@ export default class MulticallClient {
   readonly #client;
   readonly #multicallAddress;
   #pendingCalls = new Array<{
-    address: string;
+    to: string;
     data: Uint8Array<ArrayBuffer>;
     resolve: (value: Uint8Array<ArrayBuffer>) => void;
     reject: (reason: unknown) => void;
@@ -23,14 +23,14 @@ export default class MulticallClient {
 
   async getBlockNumber(): Promise<number> {
     const result = await this.call({
-      address: this.#multicallAddress,
+      to: this.#multicallAddress,
       data: { method: 'getBlockNumber()', parameters: [] },
     });
     return Number(z.bigint().parse(this.#client.createABI('uint256').decode(result)));
   }
 
-  async call({ address, data }: {
-    address: string;
+  async call({ to, data }: {
+    to: string;
     data: Uint8Array<ArrayBuffer> | string | {
       method: string;
       parameters: Uint8Array<ArrayBuffer> | string | unknown[];
@@ -38,14 +38,14 @@ export default class MulticallClient {
   }): Promise<Uint8Array<ArrayBuffer>> {
     return await new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
       data = new DataEncoder((type) => this.#client.createABI(type)).normalize(data);
-      this.#pendingCalls.push({ address, data, resolve, reject });
+      this.#pendingCalls.push({ to, data, resolve, reject });
       queueMicrotask(async () => {
         if (this.#pendingCalls.length > 0) {
           const pendingCalls = this.#pendingCalls;
           this.#pendingCalls = [];
           if (pendingCalls.length > 1) {
             const data = this.#client.createABI('aggregate3((address,bool,bytes)[])').encode(
-              [pendingCalls.map(({ address, data }) => [address, true, data])],
+              [pendingCalls.map(({ to, data }) => [to, true, data])],
             );
             try {
               const result = await this.#client.call({ to: this.#multicallAddress, data });
@@ -66,9 +66,9 @@ export default class MulticallClient {
               }
             }
           } else {
-            const { address, data, resolve, reject } = ensure(pendingCalls[0]);
+            const { to, data, resolve, reject } = ensure(pendingCalls[0]);
             try {
-              resolve(await this.#client.call({ to: address, data }));
+              resolve(await this.#client.call({ to: to, data }));
             } catch (error) {
               reject(error);
             }
@@ -80,7 +80,7 @@ export default class MulticallClient {
 
   async getBalance(address: string): Promise<bigint> {
     const result = await this.call({
-      address: this.#multicallAddress,
+      to: this.#multicallAddress,
       data: { method: 'getEthBalance(address)', parameters: [address] },
     });
     return z.bigint().parse(this.#client.createABI('uint256').decode(result));
