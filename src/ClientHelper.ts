@@ -1,4 +1,4 @@
-import assert from '@quentinadam/assert';
+import { assert } from '@quentinadam/assert';
 import * as z from '@quentinadam/zod';
 import { ABI } from './ABI.ts';
 import { DataEncoder } from './DataEncoder.ts';

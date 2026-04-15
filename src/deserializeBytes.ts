@@ -1,4 +1,4 @@
-import ensure from '@quentinadam/ensure';
+import { ensure } from '@quentinadam/ensure';
 
 export function deserializeBytes(bytes: string): Uint8Array<ArrayBuffer> {
   const match = bytes.match(/^(?:0x)?(?<hex>(?:[0-9a-f][0-9a-f])*)$/i);

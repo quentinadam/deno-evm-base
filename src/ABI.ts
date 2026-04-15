@@ -1,7 +1,16 @@
-import assert from '@quentinadam/assert';
-import * as Uint8ArrayExtension from '@quentinadam/uint8array-extension';
+import { assert } from '@quentinadam/assert';
+import {
+  concat,
+  equals,
+  fromIntBE,
+  fromUintBE,
+  padEnd as _padEnd,
+  padStart,
+  toBigIntBE,
+  toBigUintBE,
+} from '@quentinadam/uint8array-extension';
 import { keccak256 } from '@quentinadam/hash/keccak256';
-import ensure from '@quentinadam/ensure';
+import { ensure } from '@quentinadam/ensure';
 import { deserializeBytes } from './deserializeBytes.ts';
 
 abstract class Element {
@@ -64,13 +73,12 @@ class IntElement extends Element {
   }
 
   override encode(value: unknown): Uint8Array<ArrayBuffer> {
-    return Uint8ArrayExtension.padStart(Uint8ArrayExtension.fromIntBE(parseBigInt(value), this.bits / 8), 32);
+    return padStart(fromIntBE(parseBigInt(value), this.bits / 8), 32);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>): bigint {
     assert(bytes.length >= 32);
-    const value = Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32));
-    return (value >= (1n << 255n)) ? value - (1n << 256n) : value;
+    return toBigIntBE(bytes.slice(0, 32));
   }
 }
 
@@ -86,12 +94,12 @@ class UintElement extends Element {
   }
 
   override encode(value: unknown): Uint8Array<ArrayBuffer> {
-    return Uint8ArrayExtension.padStart(Uint8ArrayExtension.fromUintBE(parseBigInt(value), this.bits / 8), 32);
+    return padStart(fromUintBE(parseBigInt(value), this.bits / 8), 32);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>): bigint {
     assert(bytes.length >= 32);
-    return Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32));
+    return toBigUintBE(bytes.slice(0, 32));
   }
 }
 
@@ -103,13 +111,13 @@ class BoolElement extends Element {
   override encode(value: unknown): Uint8Array<ArrayBuffer> {
     assert(typeof value === 'boolean', 'Value must be a boolean');
     return ((value) => {
-      return Uint8ArrayExtension.fromUintBE(value ? 1 : 0, 32);
+      return fromUintBE(value ? 1 : 0, 32);
     })(value);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>): boolean {
     assert(bytes.length >= 32);
-    const value = Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32));
+    const value = toBigUintBE(bytes.slice(0, 32));
     if (value === 0n) {
       return false;
     } else {
@@ -131,7 +139,7 @@ abstract class AddressElement extends Element {
     assert(typeof value === 'string', 'Value must be a string');
     const bytes = this.bytesFromAddress(value);
     assert(bytes.length === 20, 'Buffer must be 20 bytes long');
-    return Uint8ArrayExtension.padStart(bytes, 32);
+    return padStart(bytes, 32);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>): string {
@@ -150,12 +158,12 @@ class StringElement extends Element {
     assert(typeof value === 'string', 'Value must be a string');
     const bytes = new TextEncoder().encode(value);
     const length = bytes.length;
-    return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), padEnd(bytes)]);
+    return concat([fromUintBE(length, 32), padEnd(bytes)]);
   }
 
   override decode(bytes: Uint8Array<ArrayBuffer>): string {
     assert(bytes.length >= 32);
-    const length = Number(Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32)));
+    const length = Number(toBigUintBE(bytes.slice(0, 32)));
     assert(bytes.length >= 32 + padLength(length));
     return new TextDecoder().decode(bytes.slice(32, 32 + length));
   }
@@ -179,7 +187,7 @@ class BytesElement extends Element {
     if (this.length !== undefined) {
       return padEnd(bytes);
     } else {
-      return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(length, 32), padEnd(bytes)]);
+      return concat([fromUintBE(length, 32), padEnd(bytes)]);
     }
   }
 
@@ -188,7 +196,7 @@ class BytesElement extends Element {
     if (this.length !== undefined) {
       return bytes.slice(0, this.length);
     } else {
-      const length = Number(Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32)));
+      const length = Number(toBigUintBE(bytes.slice(0, 32)));
       assert(bytes.length >= 32 + padLength(length));
       return bytes.slice(32, 32 + length);
     }
@@ -200,7 +208,7 @@ function padLength(length: number): number {
 }
 
 function padEnd(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
-  return Uint8ArrayExtension.padEnd(bytes, padLength(bytes.length));
+  return _padEnd(bytes, padLength(bytes.length));
 }
 
 class StructElement extends Element {
@@ -230,7 +238,7 @@ class StructElement extends Element {
     return this.elements.map((element) => {
       const encodedLength = element.encodedLength;
       if (encodedLength === undefined) {
-        const _offset = Number(Uint8ArrayExtension.toBigUintBE(bytes.slice(offset, offset + 32)));
+        const _offset = Number(toBigUintBE(bytes.slice(offset, offset + 32)));
         const value = element.decode(bytes.slice(_offset));
         offset += 32;
         return value;
@@ -258,14 +266,14 @@ function encode({ elements, values }: { elements: Element[]; values: unknown[] }
     const tails = new Array<Uint8Array<ArrayBuffer>>();
     for (const { dynamic, encodedValue } of elements) {
       if (dynamic) {
-        heads.push(Uint8ArrayExtension.fromUintBE(offset, 32));
+        heads.push(fromUintBE(offset, 32));
         tails.push(encodedValue);
         offset += encodedValue.length;
       } else {
         heads.push(encodedValue);
       }
     }
-    return Uint8ArrayExtension.concat([...heads, ...tails]);
+    return concat([...heads, ...tails]);
   })(elements.map((element, index) => {
     const value = values[index];
     const encodedValue = element.encode(value);
@@ -290,7 +298,7 @@ class ArrayElement extends Element {
       assert(values.length === this.length, 'Array length must match');
       return encodedValue;
     } else {
-      return Uint8ArrayExtension.concat([Uint8ArrayExtension.fromUintBE(values.length, 32), encodedValue]);
+      return concat([fromUintBE(values.length, 32), encodedValue]);
     }
   }
 
@@ -299,7 +307,7 @@ class ArrayElement extends Element {
       if (this.length === undefined) {
         // Dynamic array: read length from first 32 bytes
         assert(bytes.length >= 32);
-        return { length: Number(Uint8ArrayExtension.toBigUintBE(bytes.slice(0, 32))), dataOffset: 32 };
+        return { length: Number(toBigUintBE(bytes.slice(0, 32))), dataOffset: 32 };
       } else {
         // Fixed array: use predefined length, no length prefix
         return { length: this.length, dataOffset: 0 };
@@ -311,7 +319,7 @@ class ArrayElement extends Element {
       assert(bytes.length >= dataOffset + length * 32);
       return Array.from({ length }, (_, index) => {
         const offset = Number(
-          Uint8ArrayExtension.toBigUintBE(bytes.slice(dataOffset + index * 32, dataOffset + (index + 1) * 32)),
+          toBigUintBE(bytes.slice(dataOffset + index * 32, dataOffset + (index + 1) * 32)),
         );
         return this.element.decode(bytes.slice(dataOffset + offset));
       });
@@ -353,7 +361,7 @@ export class ABI {
   decode(bytes: Uint8Array<ArrayBuffer>): unknown {
     if (this.selector !== undefined) {
       assert(bytes.length >= 4);
-      assert(Uint8ArrayExtension.equals(bytes.slice(0, 4), this.selector));
+      assert(equals(bytes.slice(0, 4), this.selector));
       bytes = bytes.slice(4);
     }
     return this.element.decode(bytes);
@@ -362,7 +370,7 @@ export class ABI {
   encode(value: unknown): Uint8Array<ArrayBuffer> {
     let bytes = this.element.encode(value);
     if (this.selector !== undefined) {
-      bytes = Uint8ArrayExtension.concat([this.selector, bytes]);
+      bytes = concat([this.selector, bytes]);
     }
     return bytes;
   }
