@@ -1,5 +1,5 @@
 import type { PrivateKey as Secp256k1PrivateKey, Signature } from '@quentinadam/secp256k1';
-import keccak256 from '@quentinadam/hash/keccak256';
+import { keccak256 } from '@quentinadam/hash/keccak256';
 
 export default class PrivateKey {
   readonly #privateKey: Secp256k1PrivateKey;

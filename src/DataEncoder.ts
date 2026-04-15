@@ -1,5 +1,5 @@
-import concat from '@quentinadam/uint8array-extension/concat';
-import keccak256 from '@quentinadam/hash/keccak256';
+import { concat } from '@quentinadam/uint8array-extension';
+import { keccak256 } from '@quentinadam/hash/keccak256';
 import type ABI from './ABI.ts';
 import deserializeBytes from './deserializeBytes.ts';
 

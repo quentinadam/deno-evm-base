@@ -1,6 +1,6 @@
 import assert from '@quentinadam/assert';
 import * as Uint8ArrayExtension from '@quentinadam/uint8array-extension';
-import keccak256 from '@quentinadam/hash/keccak256';
+import { keccak256 } from '@quentinadam/hash/keccak256';
 import ensure from '@quentinadam/ensure';
 import deserializeBytes from './deserializeBytes.ts';
 

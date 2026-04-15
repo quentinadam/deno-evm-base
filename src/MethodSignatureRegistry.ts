@@ -1,4 +1,4 @@
-import keccak256 from '@quentinadam/hash/keccak256';
+import { keccak256 } from '@quentinadam/hash/keccak256';
 
 export default class MethodSignatureRegistry {
   static #methods = new Map<string, string>();

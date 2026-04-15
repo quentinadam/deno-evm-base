@@ -1,4 +1,4 @@
-import keccak256 from '@quentinadam/hash/keccak256';
+import { keccak256 } from '@quentinadam/hash/keccak256';
 import * as rlp from '@quentinadam/rlp';
 
 export default function computeCREATEAddress(

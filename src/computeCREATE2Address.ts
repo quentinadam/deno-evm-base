@@ -1,4 +1,4 @@
-import keccak256 from '@quentinadam/hash/keccak256';
+import { keccak256 } from '@quentinadam/hash/keccak256';
 import { concat, fromUintBE } from '@quentinadam/uint8array-extension';
 
 export default function computeCREATE2Address(
