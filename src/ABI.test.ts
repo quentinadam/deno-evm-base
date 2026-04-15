@@ -1,4 +1,4 @@
-import ABI from './ABI.ts';
+import { ABI } from './ABI.ts';
 
 function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;

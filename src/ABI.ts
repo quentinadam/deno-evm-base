@@ -2,7 +2,7 @@ import assert from '@quentinadam/assert';
 import * as Uint8ArrayExtension from '@quentinadam/uint8array-extension';
 import { keccak256 } from '@quentinadam/hash/keccak256';
 import ensure from '@quentinadam/ensure';
-import deserializeBytes from './deserializeBytes.ts';
+import { deserializeBytes } from './deserializeBytes.ts';
 
 abstract class Element {
   readonly encodedLength: number | undefined;
@@ -326,7 +326,7 @@ class ArrayElement extends Element {
   }
 }
 
-export default class ABI {
+export class ABI {
   readonly #addressFromBytes: (bytes: Uint8Array<ArrayBuffer>) => string;
   readonly #bytesFromAddress: (address: string) => Uint8Array<ArrayBuffer>;
 

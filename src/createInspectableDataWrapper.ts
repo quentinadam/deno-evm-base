@@ -1,7 +1,7 @@
 import type { InspectFn } from './inspect.ts';
-import MethodSignatureRegistry from './MethodSignatureRegistry.ts';
+import { MethodSignatureRegistry } from './MethodSignatureRegistry.ts';
 
-export default function createInspectableDataWrapper(bytes: Uint8Array): object {
+export function createInspectableDataWrapper(bytes: Uint8Array): object {
   return new (class InspectableDataWrapper {
     readonly #bytes: Uint8Array;
 

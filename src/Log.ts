@@ -1,4 +1,4 @@
-type Log = {
+export type Log = {
   address: string;
   topics: Uint8Array<ArrayBuffer>[];
   data: Uint8Array<ArrayBuffer>;
@@ -9,5 +9,3 @@ type Log = {
   logIndex: number;
   removed: boolean;
 };
-
-export default Log;

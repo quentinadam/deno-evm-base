@@ -1,6 +1,6 @@
-import type Log from './Log.ts';
+import type { Log } from './Log.ts';
 
-type TransactionReceipt = {
+export type TransactionReceipt = {
   hash: string;
   success: boolean;
   blockHash: string;
@@ -11,5 +11,3 @@ type TransactionReceipt = {
   transactionIndex: number;
   type: number;
 };
-
-export default TransactionReceipt;

@@ -1,6 +1,6 @@
 import type { InspectFn, InspectOptions } from './inspect.ts';
 
-export default function createInspectableScaledBigIntWrapper(value: bigint, exponent: number): object {
+export function createInspectableScaledBigIntWrapper(value: bigint, exponent: number): object {
   return new (class ScaledBigInt {
     readonly #value;
     readonly #exponent;

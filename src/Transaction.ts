@@ -1,4 +1,4 @@
-type Transaction = {
+export type Transaction = {
   blockHash: string;
   blockNumber: number;
   from: string;
@@ -13,5 +13,3 @@ type Transaction = {
   value: number;
   v: number;
 };
-
-export default Transaction;

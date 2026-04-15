@@ -1,9 +1,9 @@
 import { concat } from '@quentinadam/uint8array-extension';
 import { keccak256 } from '@quentinadam/hash/keccak256';
-import type ABI from './ABI.ts';
-import deserializeBytes from './deserializeBytes.ts';
+import type { ABI } from './ABI.ts';
+import { deserializeBytes } from './deserializeBytes.ts';
 
-export default class DataEncoder {
+export class DataEncoder {
   readonly #createABI: (type: string) => ABI;
 
   constructor(createABI: (type: string) => ABI) {

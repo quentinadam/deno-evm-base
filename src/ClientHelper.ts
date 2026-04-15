@@ -1,13 +1,13 @@
 import assert from '@quentinadam/assert';
 import * as z from '@quentinadam/zod';
-import ABI from './ABI.ts';
-import DataEncoder from './DataEncoder.ts';
-import type Log from './Log.ts';
-import type Transaction from './Transaction.ts';
-import type TransactionReceipt from './TransactionReceipt.ts';
-import deserializeBytes from './deserializeBytes.ts';
+import { ABI } from './ABI.ts';
+import { DataEncoder } from './DataEncoder.ts';
+import type { Log } from './Log.ts';
+import type { Transaction } from './Transaction.ts';
+import type { TransactionReceipt } from './TransactionReceipt.ts';
+import { deserializeBytes } from './deserializeBytes.ts';
 
-export default class ClientHelper {
+export class ClientHelper {
   readonly #addressFromBytes: (bytes: Uint8Array<ArrayBuffer>) => string;
   readonly #bytesFromAddress: (address: string) => Uint8Array<ArrayBuffer>;
   readonly #deserializeHash: (hash: string) => string;

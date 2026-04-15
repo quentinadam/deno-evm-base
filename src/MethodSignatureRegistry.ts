@@ -1,6 +1,6 @@
 import { keccak256 } from '@quentinadam/hash/keccak256';
 
-export default class MethodSignatureRegistry {
+export class MethodSignatureRegistry {
   static #methods = new Map<string, string>();
 
   static register(method: string) {

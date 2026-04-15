@@ -1,13 +1,13 @@
 import * as z from '@quentinadam/zod';
-import type ABI from './ABI.ts';
-import type Block from './Block.ts';
-import ClientError from './ClientError.ts';
-import type ClientHelper from './ClientHelper.ts';
-import type Log from './Log.ts';
-import type Transaction from './Transaction.ts';
-import type TransactionReceipt from './TransactionReceipt.ts';
+import type { ABI } from './ABI.ts';
+import type { Block } from './Block.ts';
+import { ClientError } from './ClientError.ts';
+import type { ClientHelper } from './ClientHelper.ts';
+import type { Log } from './Log.ts';
+import type { Transaction } from './Transaction.ts';
+import type { TransactionReceipt } from './TransactionReceipt.ts';
 
-export default class Client {
+export class Client {
   readonly #url: string;
   readonly #helper: ClientHelper;
   #id = 0;

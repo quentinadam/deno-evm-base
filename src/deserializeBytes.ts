@@ -1,6 +1,6 @@
 import ensure from '@quentinadam/ensure';
 
-export default function deserializeBytes(bytes: string): Uint8Array<ArrayBuffer> {
+export function deserializeBytes(bytes: string): Uint8Array<ArrayBuffer> {
   const match = bytes.match(/^(?:0x)?(?<hex>(?:[0-9a-f][0-9a-f])*)$/i);
   if (match === null) {
     throw new TypeError('Invalid hexadecimal string');
