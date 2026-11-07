@@ -31,7 +31,7 @@ export class ClientHelper {
   readonly AddressSchema: z.Schema<string> = z.string().transform((value) => this.deserializeAddress(value));
   readonly HashSchema: z.Schema<string> = z.string().transform((value) => this.#deserializeHash(value));
 
-  readonly LogSchema: z.ObjectSchema<Log> = z.object({
+  readonly LogSchema: z.Schema<Log> = z.object({
     address: this.AddressSchema,
     topics: z.array(this.BytesSchema),
     data: this.BytesSchema,
