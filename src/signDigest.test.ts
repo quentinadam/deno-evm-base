@@ -32,9 +32,16 @@ Deno.test('signDigest accepts an async signer', async () => {
   assert(r === expected.r && s === expected.s && recovery === expected.recovery);
 });
 
-Deno.test('signDigest rejects a high s', async () => {
-  const { r, s, recovery } = privateKey.sign(digest);
-  const signer = { sign: () => ({ r, s: N - s, recovery: recovery ^ 1 }) };
+Deno.test('signDigest normalizes a high s', async () => {
+  const expected = privateKey.sign(digest);
+  const signer = { sign: () => ({ r: expected.r, s: N - expected.s, recovery: expected.recovery ^ 1 }) };
+  const { r, s, recovery } = await signDigest({ signer, digest });
+  assert(r === expected.r && s === expected.s && recovery === expected.recovery);
+});
+
+Deno.test('signDigest rejects an out-of-range s', async () => {
+  const { r, recovery } = privateKey.sign(digest);
+  const signer = { sign: () => ({ r, s: N, recovery }) };
   assert(await rejects(() => signDigest({ signer, digest })));
 });
 
