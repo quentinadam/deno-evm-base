@@ -12,5 +12,7 @@ export type { Log } from './Log.ts';
 export { MethodSignatureRegistry } from './MethodSignatureRegistry.ts';
 export { MulticallClient } from './MulticallClient.ts';
 export { PrivateKey } from './PrivateKey.ts';
+export type { Signer } from './Signer.ts';
+export { signDigest } from './signDigest.ts';
 export type { Transaction } from './Transaction.ts';
 export type { TransactionReceipt } from './TransactionReceipt.ts';
