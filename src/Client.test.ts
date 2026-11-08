@@ -25,7 +25,7 @@ Deno.test('Client sends requests through the given fetcher', async () => {
   assert(request.options.body === JSON.stringify({ method: 'eth_chainId', params: [], id: 0, jsonrpc: '2.0' }));
 });
 
-Deno.test('Client sends the given headers with every request', async () => {
+Deno.test('Client sends the given headers with every request, keeping its own Content-Type', async () => {
   const headers: Headers[] = [];
   const fetcher = {
     fetch: async (_url: string, options?: RequestInit) => {
@@ -33,7 +33,11 @@ Deno.test('Client sends the given headers with every request', async () => {
       return await Promise.resolve(Response.json({ jsonrpc: '2.0', id: 0, result: '0x1' }));
     },
   };
-  const client = new Client('https://rpc.example', { helper, fetcher, headers: { Authorization: 'Bearer token' } });
+  const client = new Client('https://rpc.example', {
+    helper,
+    fetcher,
+    headers: { Authorization: 'Bearer token', 'content-type': 'text/plain' },
+  });
   await client.getChainId();
   const [request] = headers;
   assert(request !== undefined && request.get('Authorization') === 'Bearer token');

@@ -35,11 +35,9 @@ export class Client {
   async request({ method, params }: { method: string; params?: unknown }): Promise<unknown> {
     const body = JSON.stringify({ method, params, id: this.#id++, jsonrpc: '2.0' });
     this.#logger?.log('POST', this.#url, body);
-    const response = await this.#fetcher.fetch(this.#url, {
-      method: 'POST',
-      headers: { ...this.#headers, 'Content-Type': 'application/json' },
-      body,
-    });
+    const headers = new Headers(this.#headers);
+    headers.set('Content-Type', 'application/json');
+    const response = await this.#fetcher.fetch(this.#url, { method: 'POST', headers, body });
     const text = await response.text();
     this.#logger?.log(response.status, text);
     if (!response.ok) {
