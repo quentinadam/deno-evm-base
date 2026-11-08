@@ -1,5 +1,5 @@
 import type { PrivateKey as Secp256k1PrivateKey, Signature } from '@quentinadam/secp256k1';
-import { keccak256 } from '@quentinadam/hash/keccak256';
+import { PublicKey } from './PublicKey.ts';
 
 export class PrivateKey {
   readonly #privateKey: Secp256k1PrivateKey;
@@ -21,7 +21,11 @@ export class PrivateKey {
     return this.#privateKey.toBytes();
   }
 
+  getPublicKey(): PublicKey {
+    return new PublicKey({ publicKey: this.#privateKey.getPublicKey(), addressFromBytes: this.#addressFromBytes });
+  }
+
   toAddress(): string {
-    return this.#addressFromBytes(keccak256(this.#privateKey.getPublicKey().toBytes(false).slice(1)).slice(-20));
+    return this.getPublicKey().toAddress();
   }
 }
