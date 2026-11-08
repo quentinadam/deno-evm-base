@@ -1,16 +1,20 @@
-import type { PrivateKey as Secp256k1PrivateKey, Signature } from '@quentinadam/secp256k1';
-import { PublicKey } from './PublicKey.ts';
+import type {
+  PrivateKey as Secp256k1PrivateKey,
+  PublicKey as Secp256k1PublicKey,
+  Signature,
+} from '@quentinadam/secp256k1';
+import type { PublicKey } from './PublicKey.ts';
 
-export class PrivateKey {
+export class PrivateKey<T extends PublicKey = PublicKey> {
   readonly #privateKey: Secp256k1PrivateKey;
-  readonly #addressFromBytes: (bytes: Uint8Array<ArrayBuffer>) => string;
+  readonly #createPublicKey: (publicKey: Secp256k1PublicKey) => T;
 
-  constructor({ privateKey, addressFromBytes }: {
+  constructor({ privateKey, createPublicKey }: {
     privateKey: Secp256k1PrivateKey;
-    addressFromBytes: (bytes: Uint8Array<ArrayBuffer>) => string;
+    createPublicKey: (publicKey: Secp256k1PublicKey) => T;
   }) {
     this.#privateKey = privateKey;
-    this.#addressFromBytes = addressFromBytes;
+    this.#createPublicKey = createPublicKey;
   }
 
   sign(hash: Uint8Array<ArrayBuffer>): Signature {
@@ -21,8 +25,8 @@ export class PrivateKey {
     return this.#privateKey.toBytes();
   }
 
-  getPublicKey(): PublicKey {
-    return new PublicKey({ publicKey: this.#privateKey.getPublicKey(), addressFromBytes: this.#addressFromBytes });
+  getPublicKey(): T {
+    return this.#createPublicKey(this.#privateKey.getPublicKey());
   }
 
   toAddress(): string {

@@ -6,7 +6,7 @@ import { PublicKey } from './PublicKey.ts';
 const addressFromBytes = (bytes: Uint8Array<ArrayBuffer>) => `0x${bytes.toHex()}`;
 const privateKey = new PrivateKey({
   privateKey: Secp256k1PrivateKey.fromBytes(new Uint8Array(32).with(31, 1)),
-  addressFromBytes,
+  createPublicKey: (publicKey) => new PublicKey({ publicKey, addressFromBytes }),
 });
 
 Deno.test('PublicKey derives the address of its private key', () => {
