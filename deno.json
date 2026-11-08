@@ -21,6 +21,12 @@
     "@quentinadam/zod": "jsr:@quentinadam/zod@^0.2.4",
     "typescript": "npm:typescript@^7.0.2"
   },
+  "minimumDependencyAge": {
+    "exclude": [
+      "jsr:@quentinadam/*",
+      "npm:@quentinadam/*"
+    ]
+  },
   "fmt": {
     "singleQuote": true,
     "lineWidth": 120
