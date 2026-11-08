@@ -12,14 +12,17 @@ export class Client {
   readonly #helper: ClientHelper;
   #id = 0;
   readonly #logger?: { log: (...args: unknown[]) => void };
+  readonly #fetcher: { fetch(url: string, options?: RequestInit): Promise<Response> };
 
-  constructor(
-    url: string,
-    { helper, logger }: { helper: ClientHelper; logger?: { log: (...args: unknown[]) => void } },
-  ) {
+  constructor(url: string, { helper, logger, fetcher = { fetch: (url, options) => fetch(url, options) } }: {
+    helper: ClientHelper;
+    logger?: { log: (...args: unknown[]) => void };
+    fetcher?: { fetch(url: string, options?: RequestInit): Promise<Response> };
+  }) {
     this.#url = url;
     this.#helper = helper;
     this.#logger = logger;
+    this.#fetcher = fetcher;
   }
 
   createABI(type: string): ABI {
@@ -29,7 +32,7 @@ export class Client {
   async request({ method, params }: { method: string; params?: unknown }): Promise<unknown> {
     const body = JSON.stringify({ method, params, id: this.#id++, jsonrpc: '2.0' });
     this.#logger?.log('POST', this.#url, body);
-    const response = await fetch(this.#url, {
+    const response = await this.#fetcher.fetch(this.#url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
