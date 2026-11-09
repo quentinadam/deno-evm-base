@@ -83,18 +83,15 @@ export class Client {
       method: 'eth_getBlockByNumber',
       params: [blockNumber === 'latest' ? blockNumber : this.#helper.serializeInteger(blockNumber), false],
     });
-    return z.union([
-      z.null().transform(() => undefined),
-      z.object({
-        hash: z.string(),
-        parentHash: z.string(),
-        number: this.#helper.HexNumberSchema,
-        transactions: z.array(z.string()),
-        timestamp: this.#helper.HexNumberSchema.transform((value) => new Date(value * 1000)),
-        // Absent before London and on chains without EIP-1559.
-        baseFeePerGas: this.#helper.HexBigIntSchema.optional(),
-      }),
-    ]).parse(response);
+    return this.#helper.BlockSchema.parse(response);
+  }
+
+  async getBlockByHash(hash: string): Promise<Block | undefined> {
+    const response = await this.request({
+      method: 'eth_getBlockByHash',
+      params: [this.#helper.serializeHash(hash), false],
+    });
+    return this.#helper.BlockSchema.parse(response);
   }
 
   async getLogs({ address, fromBlock, toBlock, topics }: {

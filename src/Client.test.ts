@@ -149,3 +149,21 @@ Deno.test('Client parses logs, with their block timestamp when the node returns 
   const parsed = client.parseLog({ ...log, blockTimestamp: '0x3e8' });
   assert(parsed.blockTimestamp?.getTime() === 1_000_000 && parsed.logIndex === 1);
 });
+
+Deno.test('Client gets a block by hash', async () => {
+  const requests: unknown[] = [];
+  const results = [{ hash: '0x01', parentHash: '0x02', number: '0x10', transactions: [], timestamp: '0x3e8' }, null];
+  const fetcher = {
+    fetch: async (_url: string, options?: RequestInit) => {
+      requests.push(JSON.parse(String(options?.body)));
+      return await Promise.resolve(Response.json({ jsonrpc: '2.0', id: 0, result: results.shift() }));
+    },
+  };
+  const client = new Client('https://rpc.example', { helper, fetcher });
+  assert((await client.getBlockByHash('0x01'))?.timestamp.getTime() === 1_000_000);
+  assert(await client.getBlockByHash('0x03') === undefined);
+  assert(
+    JSON.stringify(requests[0]) ===
+      JSON.stringify({ method: 'eth_getBlockByHash', params: ['0x01', false], id: 0, jsonrpc: '2.0' }),
+  );
+});

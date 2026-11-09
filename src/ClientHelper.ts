@@ -1,6 +1,7 @@
 import { assert } from '@quentinadam/assert';
 import * as z from '@quentinadam/zod';
 import { ABI } from './ABI.ts';
+import type { Block } from './Block.ts';
 import { DataEncoder } from './DataEncoder.ts';
 import type { Log } from './Log.ts';
 import type { Transaction } from './Transaction.ts';
@@ -46,6 +47,19 @@ export class ClientHelper {
     logIndex: this.HexNumberSchema,
     removed: z.boolean(),
   });
+
+  readonly BlockSchema: z.Schema<Block | undefined> = z.union([
+    z.null().transform(() => undefined),
+    z.object({
+      hash: z.string(),
+      parentHash: z.string(),
+      number: this.HexNumberSchema,
+      transactions: z.array(z.string()),
+      timestamp: this.HexNumberSchema.transform((value) => new Date(value * 1000)),
+      // Absent before London and on chains without EIP-1559.
+      baseFeePerGas: this.HexBigIntSchema.optional(),
+    }),
+  ]);
 
   readonly TransactionSchema: z.Schema<Transaction | undefined> = z.union([
     z.null().transform(() => undefined),
