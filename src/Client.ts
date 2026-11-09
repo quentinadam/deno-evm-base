@@ -78,10 +78,10 @@ export class Client {
     return this.#helper.HexNumberSchema.parse(response);
   }
 
-  async getBlockByNumber(blockNumber: number): Promise<Block | undefined> {
+  async getBlockByNumber(blockNumber: number | 'latest'): Promise<Block | undefined> {
     const response = await this.request({
       method: 'eth_getBlockByNumber',
-      params: [this.#helper.serializeInteger(blockNumber), false],
+      params: [blockNumber === 'latest' ? blockNumber : this.#helper.serializeInteger(blockNumber), false],
     });
     return z.union([
       z.null().transform(() => undefined),
@@ -91,6 +91,8 @@ export class Client {
         number: this.#helper.HexNumberSchema,
         transactions: z.array(z.string()),
         timestamp: this.#helper.HexNumberSchema.transform((value) => new Date(value * 1000)),
+        // Absent before London and on chains without EIP-1559.
+        baseFeePerGas: this.#helper.HexBigIntSchema.optional(),
       }),
     ]).parse(response);
   }
@@ -184,6 +186,11 @@ export class Client {
       }],
     });
     return this.#helper.HexNumberSchema.parse(result);
+  }
+
+  async getMaxPriorityFeePerGas(): Promise<bigint> {
+    const result = await this.request({ method: 'eth_maxPriorityFeePerGas', params: [] });
+    return this.#helper.HexBigIntSchema.parse(result);
   }
 
   async getChainId(): Promise<number> {

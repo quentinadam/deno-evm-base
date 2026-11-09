@@ -62,3 +62,35 @@ Deno.test('Client gets the code at an address, empty when there is no contract',
       JSON.stringify({ method: 'eth_getCode', params: ['0x' + address, 'latest'], id: 0, jsonrpc: '2.0' }),
   );
 });
+
+Deno.test('Client gets a block by number or the latest one, with its base fee when the chain has one', async () => {
+  const requests: unknown[] = [];
+  const block = { hash: '0x01', parentHash: '0x02', number: '0x10', transactions: [], timestamp: '0x3e8' };
+  const results = [{ ...block, baseFeePerGas: '0x3b9aca00' }, block];
+  const fetcher = {
+    fetch: async (_url: string, options?: RequestInit) => {
+      requests.push(JSON.parse(String(options?.body)).params);
+      return await Promise.resolve(Response.json({ jsonrpc: '2.0', id: 0, result: results.shift() }));
+    },
+  };
+  const client = new Client('https://rpc.example', { helper, fetcher });
+  assert((await client.getBlockByNumber('latest'))?.baseFeePerGas === 1_000_000_000n);
+  assert((await client.getBlockByNumber(16))?.baseFeePerGas === undefined);
+  assert(JSON.stringify(requests) === JSON.stringify([['latest', false], ['0x10', false]]));
+});
+
+Deno.test('Client gets the max priority fee per gas', async () => {
+  const requests: unknown[] = [];
+  const fetcher = {
+    fetch: async (_url: string, options?: RequestInit) => {
+      requests.push(JSON.parse(String(options?.body)));
+      return await Promise.resolve(Response.json({ jsonrpc: '2.0', id: 0, result: '0x59682f00' }));
+    },
+  };
+  const client = new Client('https://rpc.example', { helper, fetcher });
+  assert(await client.getMaxPriorityFeePerGas() === 1_500_000_000n);
+  assert(
+    JSON.stringify(requests[0]) ===
+      JSON.stringify({ method: 'eth_maxPriorityFeePerGas', params: [], id: 0, jsonrpc: '2.0' }),
+  );
+});

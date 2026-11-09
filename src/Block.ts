@@ -4,4 +4,5 @@ export type Block = {
   number: number;
   transactions: string[];
   timestamp: Date;
+  baseFeePerGas?: bigint;
 };
