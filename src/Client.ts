@@ -123,6 +123,14 @@ export class Client {
     return z.array(this.#helper.LogSchema).parse(response);
   }
 
+  async getCode({ address }: { address: string }): Promise<Uint8Array<ArrayBuffer>> {
+    const response = await this.request({
+      method: 'eth_getCode',
+      params: [this.#helper.serializeAddress(address), 'latest'],
+    });
+    return this.#helper.BytesSchema.parse(response);
+  }
+
   async getStorageAt({ address, position }: {
     address: string;
     position: string | number | bigint | Uint8Array<ArrayBuffer>;

@@ -43,3 +43,22 @@ Deno.test('Client sends the given headers with every request, keeping its own Co
   assert(request !== undefined && request.get('Authorization') === 'Bearer token');
   assert(request.get('Content-Type') === 'application/json');
 });
+
+Deno.test('Client gets the code at an address, empty when there is no contract', async () => {
+  const requests: unknown[] = [];
+  const results = ['0x6080', '0x'];
+  const fetcher = {
+    fetch: async (_url: string, options?: RequestInit) => {
+      requests.push(JSON.parse(String(options?.body)));
+      return await Promise.resolve(Response.json({ jsonrpc: '2.0', id: 0, result: results.shift() }));
+    },
+  };
+  const client = new Client('https://rpc.example', { helper, fetcher });
+  const address = '00000000000000000000000000000000000000aa';
+  assert((await client.getCode({ address })).toHex() === '6080');
+  assert((await client.getCode({ address })).length === 0);
+  assert(
+    JSON.stringify(requests[0]) ===
+      JSON.stringify({ method: 'eth_getCode', params: ['0x' + address, 'latest'], id: 0, jsonrpc: '2.0' }),
+  );
+});
