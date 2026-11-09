@@ -51,10 +51,10 @@ export class ClientHelper {
   readonly BlockSchema: z.Schema<Block | undefined> = z.union([
     z.null().transform(() => undefined),
     z.object({
-      hash: z.string(),
-      parentHash: z.string(),
+      hash: this.HashSchema,
+      parentHash: this.HashSchema,
       number: this.HexNumberSchema,
-      transactions: z.array(z.string()),
+      transactions: z.array(this.HashSchema),
       timestamp: this.HexNumberSchema.transform((value) => new Date(value * 1000)),
       // Absent before London and on chains without EIP-1559.
       baseFeePerGas: this.HexBigIntSchema.optional(),

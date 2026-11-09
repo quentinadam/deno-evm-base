@@ -1,4 +1,5 @@
 import { assert } from '@quentinadam/assert';
+import { ensure } from '@quentinadam/ensure';
 import { Client } from './Client.ts';
 import { ClientHelper } from './ClientHelper.ts';
 
@@ -166,4 +167,25 @@ Deno.test('Client gets a block by hash', async () => {
     JSON.stringify(requests[0]) ===
       JSON.stringify({ method: 'eth_getBlockByHash', params: ['0x01', false], id: 0, jsonrpc: '2.0' }),
   );
+});
+
+Deno.test("Client gives a block's hashes in the chain's hash format, as it gives a log's", async () => {
+  const unprefixedHelper = new ClientHelper({
+    addressFromBytes: (bytes) => bytes.toHex(),
+    bytesFromAddress: (address) => Uint8Array.fromHex(address),
+    serializeHash: (hash) => '0x' + hash,
+    deserializeHash: (hash) => hash.slice(2),
+  });
+  const requests: unknown[] = [];
+  const block = { hash: '0x01', parentHash: '0x02', number: '0x10', transactions: ['0x03'], timestamp: '0x3e8' };
+  const fetcher = {
+    fetch: async (_url: string, options?: RequestInit) => {
+      requests.push(JSON.parse(String(options?.body)).params);
+      return await Promise.resolve(Response.json({ jsonrpc: '2.0', id: 0, result: block }));
+    },
+  };
+  const client = new Client('https://rpc.example', { helper: unprefixedHelper, fetcher });
+  const { hash, parentHash, transactions } = ensure(await client.getBlockByHash('01'));
+  assert(hash === '01' && parentHash === '02' && transactions[0] === '03');
+  assert(JSON.stringify(requests) === JSON.stringify([['0x01', false]]));
 });
