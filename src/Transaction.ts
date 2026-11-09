@@ -7,7 +7,7 @@ export type Transaction = {
   nonce: number;
   r: bigint;
   s: bigint;
-  to: string;
+  to: string | undefined;
   transactionIndex: number;
   type: number;
   value: number;

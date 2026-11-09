@@ -5,9 +5,10 @@ export type TransactionReceipt = {
   success: boolean;
   blockHash: string;
   blockNumber: number;
+  contractAddress: string | undefined;
   from: string;
   logs: Log[];
-  to: string;
+  to: string | undefined;
   transactionIndex: number;
   type: number;
 };

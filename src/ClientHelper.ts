@@ -29,6 +29,8 @@ export class ClientHelper {
   });
 
   readonly AddressSchema: z.Schema<string> = z.string().transform((value) => this.deserializeAddress(value));
+  // Null where there is no address: the recipient of a contract creation, or the contract a call created.
+  readonly #NullableAddressSchema = z.union([z.null().transform(() => undefined), this.AddressSchema]);
   readonly HashSchema: z.Schema<string> = z.string().transform((value) => this.#deserializeHash(value));
 
   readonly LogSchema: z.Schema<Log> = z.object({
@@ -54,7 +56,7 @@ export class ClientHelper {
       nonce: this.HexNumberSchema,
       r: this.HexBigIntSchema,
       s: this.HexBigIntSchema,
-      to: this.AddressSchema,
+      to: this.#NullableAddressSchema,
       transactionIndex: this.HexNumberSchema,
       type: this.HexNumberSchema,
       value: this.HexNumberSchema,
@@ -67,10 +69,11 @@ export class ClientHelper {
     z.object({
       blockHash: this.HashSchema,
       blockNumber: this.HexNumberSchema,
+      contractAddress: this.#NullableAddressSchema,
       from: this.AddressSchema,
       logs: z.array(this.LogSchema),
       status: this.HexNumberSchema,
-      to: this.AddressSchema,
+      to: this.#NullableAddressSchema,
       transactionHash: this.HashSchema,
       transactionIndex: this.HexNumberSchema,
       type: this.HexNumberSchema,

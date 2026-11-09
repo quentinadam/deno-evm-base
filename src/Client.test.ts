@@ -94,3 +94,31 @@ Deno.test('Client gets the max priority fee per gas', async () => {
       JSON.stringify({ method: 'eth_maxPriorityFeePerGas', params: [], id: 0, jsonrpc: '2.0' }),
   );
 });
+
+Deno.test('Client gets a receipt, with the created contract for a creation and the recipient for a call', async () => {
+  const receipt = {
+    blockHash: '0x01',
+    blockNumber: '0x10',
+    from: '0x00000000000000000000000000000000000000aa',
+    logs: [],
+    status: '0x1',
+    transactionHash: '0x02',
+    transactionIndex: '0x0',
+    type: '0x2',
+  };
+  const results = [
+    { ...receipt, to: null, contractAddress: '0x00000000000000000000000000000000000000bb' },
+    { ...receipt, to: '0x00000000000000000000000000000000000000cc', contractAddress: null },
+  ];
+  const fetcher = {
+    fetch: async () => await Promise.resolve(Response.json({ jsonrpc: '2.0', id: 0, result: results.shift() })),
+  };
+  const client = new Client('https://rpc.example', { helper, fetcher });
+  const creation = await client.getTransactionReceipt('0x02');
+  assert(
+    creation !== undefined && creation.to === undefined &&
+      creation.contractAddress === '00000000000000000000000000000000000000bb',
+  );
+  const call = await client.getTransactionReceipt('0x02');
+  assert(call?.to === '00000000000000000000000000000000000000cc' && call.contractAddress === undefined);
+});
