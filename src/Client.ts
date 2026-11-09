@@ -125,6 +125,11 @@ export class Client {
     return z.array(this.#helper.LogSchema).parse(response);
   }
 
+  // Parses a log as the node returns it, such as one an eth_subscribe notification delivers.
+  parseLog(log: unknown): Log {
+    return this.#helper.LogSchema.parse(log);
+  }
+
   async getCode({ address }: { address: string }): Promise<Uint8Array<ArrayBuffer>> {
     const response = await this.request({
       method: 'eth_getCode',

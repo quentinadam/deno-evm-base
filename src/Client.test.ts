@@ -122,3 +122,30 @@ Deno.test('Client gets a receipt, with the created contract for a creation and t
   const call = await client.getTransactionReceipt('0x02');
   assert(call?.to === '00000000000000000000000000000000000000cc' && call.contractAddress === undefined);
 });
+
+Deno.test('Client parses logs, with their block timestamp when the node returns it', async () => {
+  const log = {
+    address: '0x00000000000000000000000000000000000000aa',
+    topics: ['0x01'],
+    data: '0x02',
+    blockHash: '0x03',
+    transactionHash: '0x04',
+    blockNumber: '0x10',
+    transactionIndex: '0x0',
+    logIndex: '0x1',
+    removed: false,
+  };
+  const fetcher = {
+    fetch: async () => {
+      return await Promise.resolve(
+        Response.json({ jsonrpc: '2.0', id: 0, result: [{ ...log, blockTimestamp: '0x3e8' }, log] }),
+      );
+    },
+  };
+  const client = new Client('https://rpc.example', { helper, fetcher });
+  const [stamped, unstamped] = await client.getLogs({});
+  assert(stamped?.blockTimestamp?.getTime() === 1_000_000 && stamped.topics[0]?.toHex() === '01');
+  assert(unstamped !== undefined && unstamped.blockTimestamp === undefined);
+  const parsed = client.parseLog({ ...log, blockTimestamp: '0x3e8' });
+  assert(parsed.blockTimestamp?.getTime() === 1_000_000 && parsed.logIndex === 1);
+});

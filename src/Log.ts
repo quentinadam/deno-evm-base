@@ -5,6 +5,7 @@ export type Log = {
   blockHash: string;
   transactionHash: string;
   blockNumber: number;
+  blockTimestamp?: Date;
   transactionIndex: number;
   logIndex: number;
   removed: boolean;

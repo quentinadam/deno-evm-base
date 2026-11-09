@@ -40,6 +40,8 @@ export class ClientHelper {
     blockHash: this.HashSchema,
     transactionHash: this.HashSchema,
     blockNumber: this.HexNumberSchema,
+    // Absent from nodes that predate the field, such as Geth before 1.16.
+    blockTimestamp: this.HexNumberSchema.transform((value) => new Date(value * 1000)).optional(),
     transactionIndex: this.HexNumberSchema,
     logIndex: this.HexNumberSchema,
     removed: z.boolean(),
