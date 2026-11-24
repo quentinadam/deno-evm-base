@@ -64,10 +64,10 @@ Deno.test('Client gets the code at an address, empty when there is no contract',
   );
 });
 
-Deno.test('Client gets a block by number or the latest one, with its base fee when the chain has one', async () => {
+Deno.test('Client gets a block by number, the latest or the finalized one, with its base fee when the chain has one', async () => {
   const requests: unknown[] = [];
   const block = { hash: '0x01', parentHash: '0x02', number: '0x10', transactions: [], timestamp: '0x3e8' };
-  const results = [{ ...block, baseFeePerGas: '0x3b9aca00' }, block];
+  const results = [{ ...block, baseFeePerGas: '0x3b9aca00' }, block, { ...block, number: '0xe' }];
   const fetcher = {
     fetch: async (_url: string, options?: RequestInit) => {
       requests.push(JSON.parse(String(options?.body)).params);
@@ -77,7 +77,8 @@ Deno.test('Client gets a block by number or the latest one, with its base fee wh
   const client = new Client('https://rpc.example', { helper, fetcher });
   assert((await client.getBlockByNumber('latest'))?.baseFeePerGas === 1_000_000_000n);
   assert((await client.getBlockByNumber(16))?.baseFeePerGas === undefined);
-  assert(JSON.stringify(requests) === JSON.stringify([['latest', false], ['0x10', false]]));
+  assert((await client.getBlockByNumber('finalized'))?.number === 14);
+  assert(JSON.stringify(requests) === JSON.stringify([['latest', false], ['0x10', false], ['finalized', false]]));
 });
 
 Deno.test('Client gets the max priority fee per gas', async () => {

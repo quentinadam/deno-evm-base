@@ -78,10 +78,10 @@ export class Client {
     return this.#helper.HexNumberSchema.parse(response);
   }
 
-  async getBlockByNumber(blockNumber: number | 'latest'): Promise<Block | undefined> {
+  async getBlockByNumber(blockNumber: number | 'latest' | 'finalized'): Promise<Block | undefined> {
     const response = await this.request({
       method: 'eth_getBlockByNumber',
-      params: [blockNumber === 'latest' ? blockNumber : this.#helper.serializeInteger(blockNumber), false],
+      params: [typeof blockNumber === 'string' ? blockNumber : this.#helper.serializeInteger(blockNumber), false],
     });
     return this.#helper.BlockSchema.parse(response);
   }
